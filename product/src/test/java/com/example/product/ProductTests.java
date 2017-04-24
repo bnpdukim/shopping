@@ -17,7 +17,12 @@ public class ProductTests {
 	}
 
 	@Test
-	public void 제품_조회() {
+	public void 제품_전체조회() {
+		fail();
+	}
+
+	@Test
+	public void 제품_아이디조회() {
 		fail();
 	}
 

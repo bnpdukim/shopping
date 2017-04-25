@@ -24,6 +24,10 @@ public interface ProductService {
 
     ProductDto.Response findProduct(Long productId);
 
+    void deleteProduct(Long productId);
+
+    void updateProduct(Long productId, ProductDto.New reProduct);
+
     @Service
     @Slf4j
     @Transactional
@@ -52,6 +56,19 @@ public interface ProductService {
             return productRepository.findOne(productId)
                 .map(p->new ProductDto.Response(p.getId(),p.getName(),p.getPrice()))
                 .orElseThrow(()->new RuntimeException("id"+productId+"에 해당하는 product가 존재하지 않음"));
+        }
+
+        @Override
+        public void deleteProduct(Long productId) {
+            productRepository.delete(productId);
+        }
+
+        @Override
+        public void updateProduct(Long productId, ProductDto.New reProduct) {
+            Product product = productRepository.findOne(productId)
+                .orElseThrow(()->new RuntimeException("id"+productId+"에 해당하는 product가 존재하지 않음"));
+            product.setName(reProduct.getName());
+            product.setPrice(reProduct.getPrice());
         }
     }
 }

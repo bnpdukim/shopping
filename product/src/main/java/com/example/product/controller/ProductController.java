@@ -48,4 +48,18 @@ public class ProductController {
         log.info("product id : {}", productId);
         return productService.findProduct(productId);
     }
+
+    @DeleteMapping(value = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProduct(@PathVariable("id") Long productId) {
+        log.info("delete.. product id : {}", productId);
+        productService.deleteProduct(productId);
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteProduct(@PathVariable("id") Long productId, @RequestBody ProductDto.New reProduct) {
+        log.info("update.. product id : {}, to : {}", productId, reProduct);
+        productService.updateProduct(productId, reProduct);
+    }
 }

@@ -78,25 +78,21 @@ public class ProductTests {
 	@Test
 	public void 제품_전체조회() throws Exception {
 	    int productCount = 5;
-		List<ProductDto.New> newProducts = createDummyProduct("productName", 3000, productCount);
-		newProducts.stream().forEach(newProduct -> {
-            try {
-                mockMvc.perform(prepareNewProductBuilder(newProduct));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-		MvcResult mvcResult = mockMvc.perform(
-				get(PRODUCT_URI)
-				.accept(MediaType.APPLICATION_JSON_UTF8)
-			).andReturn();
-		mockMvc.perform(asyncDispatch(mvcResult))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(productCount)));
+        createDummyProductAndRegister(productCount);
+        assertProductsSize(productCount);
 	}
 
-	private List<ProductDto.New> createDummyProduct(String productName, int initialValue, int count) {
+    private void assertProductsSize(int productCount) throws Exception {
+        MvcResult mvcResult = mockMvc.perform(
+                get(PRODUCT_URI)
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+            ).andReturn();
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(productCount)));
+    }
+
+    private List<ProductDto.New> createDummyProduct(String productName, int initialValue, int count) {
 		return IntStream
 				.rangeClosed(1, count)
 				.mapToObj(n->new ProductDto.New(productName+n, initialValue+n))
@@ -106,21 +102,7 @@ public class ProductTests {
 	@Test
 	public void 제품_아이디조회() throws Exception {
         int productCount = 5;
-        List<ProductDto.New> newProducts = createDummyProduct("productName", 3000, productCount);
-        newProducts.stream().forEach(newProduct -> {
-            try {
-                mockMvc.perform(prepareNewProductBuilder(newProduct));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        MvcResult mvcResult = mockMvc.perform(
-            get(PRODUCT_URI).accept(MediaType.APPLICATION_JSON_UTF8)
-        ).andReturn();
-        MvcResult result = mockMvc.perform(asyncDispatch(mvcResult)).andReturn();
-        List<ProductDto.Response> productList = objectMapper.readValue(result.getResponse().getContentAsString(), objectMapper.getTypeFactory().constructCollectionType(List.class, ProductDto.Response.class));
-
+        List<ProductDto.Response> productList = createDummyProductsAndGet(productCount);
 
         ProductDto.Response aProduct = productList.get(0);
         mockMvc.perform(
@@ -133,13 +115,62 @@ public class ProductTests {
 	}
 
 	@Test
-	public void 제품_삭제() {
-		fail();
+	public void 제품_삭제() throws Exception {
+        int productCount = 5;
+        List<ProductDto.Response> productList = createDummyProductsAndGet(productCount);
+
+        ProductDto.Response aProduct = productList.get(0);
+        mockMvc.perform(
+                delete(PRODUCT_URI+"/"+aProduct.getId())
+        ).andExpect(status().isNoContent());
+        assertProductsSize(productCount-1);
 	}
 
-	@Test
-	public void 제품_수정() {
-		fail();
+    private List<ProductDto.Response> createDummyProductsAndGet(int productCount) throws Exception {
+        createDummyProductAndRegister(productCount);
+
+        return retrieveProducts();
+    }
+
+    private List<ProductDto.Response> retrieveProducts() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(
+                get(PRODUCT_URI).accept(MediaType.APPLICATION_JSON_UTF8)
+        ).andReturn();
+        MvcResult result = mockMvc.perform(asyncDispatch(mvcResult)).andReturn();
+        return objectMapper.readValue(result.getResponse().getContentAsString(), objectMapper.getTypeFactory().constructCollectionType(List.class, ProductDto.Response.class));
+    }
+
+    private void createDummyProductAndRegister(int productCount) {
+        List<ProductDto.New> newProducts = createDummyProduct("productName", 3000, productCount);
+        newProducts.stream().forEach(newProduct -> {
+            try {
+                mockMvc.perform(prepareNewProductBuilder(newProduct));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Test
+	public void 제품_수정() throws Exception {
+	    int productCount = 1;
+        List<ProductDto.Response> productList = createDummyProductsAndGet(productCount);
+
+        ProductDto.Response aProduct = productList.get(0);
+        String newName = "rename";
+        int newPrice = 333;
+        mockMvc.perform(
+                put(PRODUCT_URI+"/"+aProduct.getId()).contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(objectMapper.writeValueAsString(new ProductDto.New(newName,newPrice)))
+        ).andExpect(status().isOk());
+
+        mockMvc.perform(
+                get(PRODUCT_URI+"/"+aProduct.getId()).accept(MediaType.APPLICATION_JSON_UTF8)
+        ).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect( jsonPath("$.id", is(aProduct.getId().intValue())) )
+                .andExpect( jsonPath("$.name", is(newName)) )
+                .andExpect( jsonPath("$.price", is(newPrice)) );
 	}
 
 }

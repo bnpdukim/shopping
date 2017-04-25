@@ -18,4 +18,6 @@ public interface ProductRepository extends Repository<Product, Long> {
     CompletableFuture<List<Product>> findAllBy();
 
     Optional<Product> findOne(Long productId);
+
+    void delete(Long productId);
 }

@@ -1,2 +1,9 @@
 server:
   port: 6001
+  context-path: /product
+
+api.version: v1
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create

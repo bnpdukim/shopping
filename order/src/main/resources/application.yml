@@ -1,2 +1,3 @@
 server:
   port: 6000
+  context-path: /order

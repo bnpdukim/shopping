@@ -1,0 +1,8 @@
+server:
+  port: 6002
+  context-path: /user
+api.version: v1
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create

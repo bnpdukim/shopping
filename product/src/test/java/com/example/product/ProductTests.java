@@ -19,6 +19,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,7 +55,7 @@ public class ProductTests {
 	public void 제품_등록() throws Exception {
         ProductDto.New newProduct = new ProductDto.New("name", 30000);
         mockMvc
-            .perform(prepareNewProductBuilder(newProduct))
+            .perform(prepareNewObjectBuilder(PRODUCT_URI, newProduct))
             .andExpect(status().isCreated());
     }
 
@@ -68,8 +69,8 @@ public class ProductTests {
 		productService.create(newProduct);
 	}
 
-	private RequestBuilder prepareNewProductBuilder(ProductDto.New newProduct) throws JsonProcessingException {
-		return post(PRODUCT_URI)
+	private RequestBuilder prepareNewObjectBuilder(String uri, Object newProduct) throws JsonProcessingException {
+		return post(uri)
 				.contentType(MediaType.APPLICATION_JSON_UTF8)
 				.content(objectMapper.writeValueAsString(newProduct));
 	}
@@ -78,17 +79,26 @@ public class ProductTests {
 	public void 제품_전체조회() throws Exception {
 	    int productCount = 5;
         createDummyProductAndRegister(productCount);
-        assertProductsSize(productCount);
+        retrieveProductsAndAssert(productCount);
 	}
 
-    private void assertProductsSize(int productCount) throws Exception {
-        MvcResult mvcResult = mockMvc.perform(
-                get(PRODUCT_URI)
-                .accept(MediaType.APPLICATION_JSON_UTF8)
-            ).andReturn();
-        mockMvc.perform(asyncDispatch(mvcResult))
+    private void retrieveProductsAndAssert(int productCount) throws Exception {
+        retrieveProductsActions()
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(productCount)));
+    }
+
+    private List<ProductDto.Response> retrieveProducts() throws Exception {
+        MvcResult result = retrieveProductsActions().andReturn();
+        return objectMapper.readValue(result.getResponse().getContentAsString(), objectMapper.getTypeFactory().constructCollectionType(List.class, ProductDto.Response.class));
+    }
+
+    private ResultActions retrieveProductsActions() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(
+                get(PRODUCT_URI)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+        ).andReturn();
+        return mockMvc.perform(asyncDispatch(mvcResult));
     }
 
     private List<ProductDto.New> createDummyProduct(String productName, int initialValue, int count) {
@@ -122,7 +132,7 @@ public class ProductTests {
         mockMvc.perform(
                 delete(PRODUCT_URI+"/"+aProduct.getId())
         ).andExpect(status().isNoContent());
-        assertProductsSize(productCount-1);
+        retrieveProductsAndAssert(productCount-1);
 	}
 
     private List<ProductDto.Response> createDummyProductsAndGet(int productCount) throws Exception {
@@ -131,19 +141,11 @@ public class ProductTests {
         return retrieveProducts();
     }
 
-    private List<ProductDto.Response> retrieveProducts() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(
-                get(PRODUCT_URI).accept(MediaType.APPLICATION_JSON_UTF8)
-        ).andReturn();
-        MvcResult result = mockMvc.perform(asyncDispatch(mvcResult)).andReturn();
-        return objectMapper.readValue(result.getResponse().getContentAsString(), objectMapper.getTypeFactory().constructCollectionType(List.class, ProductDto.Response.class));
-    }
-
     private void createDummyProductAndRegister(int productCount) {
         List<ProductDto.New> newProducts = createDummyProduct("productName", 3000, productCount);
         newProducts.stream().forEach(newProduct -> {
             try {
-                mockMvc.perform(prepareNewProductBuilder(newProduct));
+                mockMvc.perform(prepareNewObjectBuilder(PRODUCT_URI, newProduct));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

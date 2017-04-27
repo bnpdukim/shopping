@@ -1,7 +1,11 @@
 package com.example.order.dto;
 
+import com.example.product.dto.ProductDto;
+import com.example.user.dto.UserDto;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -20,6 +24,24 @@ public class OrderDto {
             this.principalId = principalId;
             this.productId = productId;
             this.quantity = quantity;
+        }
+    }
+
+    @NoArgsConstructor
+    @Getter
+    @ToString
+    @Setter
+    public static class Details {
+        private Long id;
+        @JsonUnwrapped
+        private New order;
+
+        private ProductDto.Response product;
+        private UserDto.Response user;
+
+        public Details(Long id, String principalId, Long productId, Integer quantity) {
+            this.id = id;
+            this.order = new New(principalId, productId, quantity);
         }
     }
 }

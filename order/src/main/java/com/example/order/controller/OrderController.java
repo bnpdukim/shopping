@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import java.util.List;
 
 /**
  * Created by sajacaros on 2017-04-26.
@@ -23,5 +26,14 @@ public class OrderController {
     public void createOrder(@RequestBody OrderDto.New newOrder) {
         log.info("create user : {}", newOrder);
         orderService.create(newOrder);
+    }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public DeferredResult<List<OrderDto.Details>> orders() {
+        log.info("!!!!!!!");
+        DeferredResult<List<OrderDto.Details>> deferredResult = new DeferredResult<>();
+        orderService.orders().thenAccept(orders->deferredResult.setResult(orders));
+        return deferredResult;
     }
 }

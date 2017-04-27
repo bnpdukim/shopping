@@ -6,3 +6,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+
+user:
+  uri: localhost
+  port: 6002
+  context-path: /user
+  version: v1
+product:
+  uri: localhost
+  port: 6001
+  context-path: /product
+  version: v1

@@ -46,30 +46,19 @@ public interface OrderService {
 
         @Override
         public CompletableFuture<List<OrderDto.Details>> orders() {
-            return orderRepository.findAllBy()
+             return orderRepository.findAllBy()
                 .thenApply(orders->
                     orders.stream()
                         .map(order->new OrderDto.Details(
-                            order.getId(),
-                            order.getPrincipalId(),
-                            order.getProductId(),
-                            order.getQuantity()))
-                        .collect(Collectors.toList())
-                ).thenApply(orderDtos->
-                    orderDtos.stream()
-                        .map(orderDto -> {
-                            log.info("orderDto : {}", orderDto);
-                            return orderDto;
-                        })
+                                order.getId(),
+                                order.getPrincipalId(),
+                                order.getProductId(),
+                                order.getQuantity()))
                         .map(orderDto -> userFuture(orderDto))
+                        .map(completableOrderDto->completableOrderDto.thenCompose(orderDto->productFuture(orderDto)))
                         .map(CompletableFuture::join)
                         .collect(Collectors.toList())
-                ).thenApply(orderDtos->
-                    orderDtos.stream()
-                        .map(orderDto->productFuture(orderDto))
-                        .map(CompletableFuture::join)
-                        .collect(Collectors.toList())
-            );
+                );
         }
 
         private CompletableFuture<OrderDto.Details> productFuture(final OrderDto.Details orderDto) {

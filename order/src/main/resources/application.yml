@@ -1,6 +1,10 @@
 server:
   port: 6000
   context-path: /order
+management:
+  context-path: /admin
+  port: 6001
+
 api.version: v1
 spring:
   jpa:
@@ -8,12 +12,21 @@ spring:
       ddl-auto: create
 
 user:
-  uri: localhost
-  port: 6002
   context-path: /user
   version: v1
 product:
-  uri: localhost
-  port: 6001
   context-path: /product
   version: v1
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${observatory.ip}:${observatory.port}/eureka/
+  instance:
+    prefer-ip-address: true
+    status-page-url-path: ${management.context-path}/info
+    health-check-url-path: ${management.context-path}/health
+
+observatory:
+  ip: 192.168.40.155
+  port: 8761

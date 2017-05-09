@@ -19,15 +19,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.mock.Calls;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,15 +65,11 @@ public class OrderTests {
 	public void setup() {
 		ORDER_URI = "/api/"+apiVersion;
 
-        Response<ProductDto.Response> productResponse = Response.success(new ProductDto.Response(3L, "productname", 3000));
-
 		when(productEndPoint.product(anyLong()))
-                .thenReturn(Calls.response(productResponse));
-
-        Response<UserDto.Response> userResponse = Response.success(new UserDto.Response(1L, "bnp", "username", Sex.MALE));
+                .thenReturn(ResponseEntity.ok(new ProductDto.Response(3L, "productname", 3000)));
 
         when(userEndPoint.userProfile(anyString()))
-                .thenReturn(Calls.response(userResponse));
+                .thenReturn(ResponseEntity.ok(new UserDto.Response(1L, "bnp", "username", Sex.MALE)));
 	}
 
 	@Test

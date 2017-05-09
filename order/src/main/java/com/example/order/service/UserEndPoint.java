@@ -1,14 +1,18 @@
 package com.example.order.service;
 
 import com.example.user.dto.UserDto;
-import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.Path;
+import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Created by sajacaros on 2017-04-27.
  */
+@FeignClient("user")
 public interface UserEndPoint {
-    @GET("{principalId}")
-    Call<UserDto.Response> userProfile(@Path("principalId") String principalId);
+    @RequestMapping(method = RequestMethod.GET, value = "/${user.context-path}/${user.version}/{principalId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<UserDto.Response> userProfile(@PathVariable("principalId") String principalId);
 }

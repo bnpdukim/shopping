@@ -13,6 +13,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 @FeignClient(value = "product")
 public interface ProductEndPoint {
-    @RequestMapping(method = RequestMethod.GET, value = "/${product.context-path}/${product.version}/{productId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(method = RequestMethod.GET, value = "/product/api/v1/{productId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     ResponseEntity<ProductDto.Response> product(@PathVariable("productId") Long productId);
 }

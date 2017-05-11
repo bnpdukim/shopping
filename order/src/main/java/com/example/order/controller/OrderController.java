@@ -33,7 +33,9 @@ public class OrderController {
     public DeferredResult<List<OrderDto.Details>> orders() {
         log.info("!!!!!!!");
         DeferredResult<List<OrderDto.Details>> deferredResult = new DeferredResult<>();
-        orderService.orders().thenAccept(orders->deferredResult.setResult(orders));
+
+        orderService.orders().thenAccept(orders -> deferredResult.setResult(orders));
+
         return deferredResult;
     }
 }

@@ -10,6 +10,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+  rabbitmq:
+    host: 61.105.58.243
+    username: order
+    password: bnp@1234
+    virtual-host: monitor
 
 user:
   context-path: /user
@@ -30,3 +35,4 @@ eureka:
 observatory:
   ip: 192.168.40.155
   port: 8761
+feign.hystrix.enabled: true

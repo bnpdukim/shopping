@@ -1,0 +1,8 @@
+server:
+  port: 8989
+spring:
+  rabbitmq:
+    host: 61.105.58.243
+    username: turbine
+    password: bnp@1234
+    virtual-host: monitor

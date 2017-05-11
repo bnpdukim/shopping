@@ -7,12 +7,17 @@ import com.example.product.dto.ProductDto;
 import com.example.user.dto.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -51,36 +56,45 @@ public interface OrderService {
                                 order.getProductId(),
                                 order.getQuantity()))
                         .map(orderDto -> userFuture(orderDto))
-                        .map(completableOrderDto->completableOrderDto.thenCompose(orderDto->productFuture(orderDto)))
+                        .map(completableOrderDto-> completableOrderDto.thenCompose(orderDto -> productFuture(orderDto)))
                         .map(CompletableFuture::join)
+                        .filter(d->d.getProduct().getId()!=-1)
+                        .filter(d->d.getUser().getId()!=-1)
                         .collect(Collectors.toList())
                 );
         }
 
+        @Resource
+        TaskExecutor serviceExecutor;
+
         private CompletableFuture<OrderDto.Details> productFuture(final OrderDto.Details orderDto) {
             CompletableFuture<OrderDto.Details> future = new CompletableFuture<>();
-            ResponseEntity<ProductDto.Response> responseEntity = productEndPoint.product(orderDto.getOrder().getProductId());
-            if( responseEntity.getStatusCode().is2xxSuccessful() ) {
-                orderDto.setProduct(responseEntity.getBody());
-                future.complete(orderDto);
-            } else {
-                log.warn("user endpoint repsonse is failed.. productId : {}", orderDto.getOrder().getProductId());
-                future.completeExceptionally(new RuntimeException("product 정보 획득 실패"));
-            }
+            serviceExecutor.execute(()-> {
+                ResponseEntity<ProductDto.Response> responseEntity = productEndPoint.product(orderDto.getOrder().getProductId());
+                if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                    orderDto.setProduct(responseEntity.getBody());
+                    future.complete(orderDto);
+                } else {
+                    log.warn("user endpoint repsonse is failed.. productId : {}", orderDto.getOrder().getProductId());
+                    future.completeExceptionally(new RuntimeException("product 정보 획득 실패"));
+                }
+            });
 
             return future;
         }
 
         private CompletableFuture<OrderDto.Details> userFuture(final OrderDto.Details orderDto) {
             CompletableFuture<OrderDto.Details> future = new CompletableFuture<>();
-            ResponseEntity<UserDto.Response> responseEntity = userEndPoint.userProfile(orderDto.getOrder().getPrincipalId());
-            if( responseEntity.getStatusCode().is2xxSuccessful() ) {
-                orderDto.setUser(responseEntity.getBody());
-                future.complete(orderDto);
-            } else {
-                log.warn("user endpoint repsonse is failed.. principalId : {}", orderDto.getOrder().getPrincipalId());
-                future.completeExceptionally(new RuntimeException("user 정보 획득 실패"));
-            }
+            serviceExecutor.execute(()-> {
+                ResponseEntity<UserDto.Response> responseEntity = userEndPoint.userProfile(orderDto.getOrder().getPrincipalId());
+                if( responseEntity.getStatusCode().is2xxSuccessful() ) {
+                    orderDto.setUser(responseEntity.getBody());
+                    future.complete(orderDto);
+                } else {
+                    log.warn("user endpoint repsonse is failed.. principalId : {}", orderDto.getOrder().getPrincipalId());
+                    future.completeExceptionally(new RuntimeException("user 정보 획득 실패"));
+                }
+            });
             return future;
         }
     }

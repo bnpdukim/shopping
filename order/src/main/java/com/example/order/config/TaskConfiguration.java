@@ -19,4 +19,14 @@ public class TaskConfiguration {
         executor.initialize();
         return executor;
     }
+
+    @Bean
+    public TaskExecutor serviceExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setQueueCapacity(50);
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.initialize();
+        return executor;
+    }
 }

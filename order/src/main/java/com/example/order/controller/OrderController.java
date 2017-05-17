@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import java.security.Principal;
 import java.util.List;
 
 /**
@@ -23,15 +24,14 @@ public class OrderController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public void createOrder(@RequestBody OrderDto.New newOrder) {
-        log.info("create user : {}", newOrder);
+    public void createOrder(@RequestBody OrderDto.New newOrder, Principal principal) {
+        log.info("create order : {}, principal : {}", newOrder, principal.getName());
         orderService.create(newOrder);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public DeferredResult<List<OrderDto.Details>> orders() {
-        log.info("!!!!!!!");
         DeferredResult<List<OrderDto.Details>> deferredResult = new DeferredResult<>();
 
         orderService.orders().thenAccept(orders -> deferredResult.setResult(orders));

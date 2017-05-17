@@ -35,4 +35,22 @@ eureka:
 observatory:
   ip: 192.168.40.155
   port: 8761
-feign.hystrix.enabled: true
+feign:
+  hystrix:
+    enabled: false
+  oauth2:
+    enabled: true
+
+
+
+uaa:
+  client:
+    id: order
+    client-id: order
+    client-secret: shoppingmal
+    access-token-uri: http://localhost:9999/uaa/oauth/token
+    user-authorization-uri: http://localhost:9999/uaa/oauth/authorize
+  resource:
+    jwt:
+      key-uri: http://localhost:9999/uaa/oauth/token_key
+    token-info-uri: http://localhost:9999/uaa/oauth/check_token

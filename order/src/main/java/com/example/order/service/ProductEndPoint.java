@@ -1,6 +1,5 @@
 package com.example.order.service;
 
-import com.example.order.config.FeignConfiguration;
 import com.example.product.dto.ProductDto;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.MediaType;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 /**
  * Created by sajacaros on 2017-04-27.
  */
-@FeignClient(value = "product")
+@FeignClient(value = "product", fallback = ProductFallback.class)
 public interface ProductEndPoint {
     @RequestMapping(method = RequestMethod.GET, value = "/product/api/v1/{productId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     ResponseEntity<ProductDto.Response> product(@PathVariable("productId") Long productId);
